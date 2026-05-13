@@ -1,0 +1,514 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Printer, Trash2, Pencil, Plus, Save, History, Eye } from 'lucide-react';
+
+// Data Guru Mengikut Kumpulan (Sesi 2026)
+const initialKumpulanGuru = {
+  1: [
+    "Mohd Rafeeq bin Sulaiman (K)",
+    "Hilwa Hayati binti Mohamad Ajalan",
+    "Nur Azlin binti Norizan",
+    "Ting Yu Yong",
+    "Syaeeza Liana binti Ramli"
+  ],
+  2: [
+    "Dliyana anak John (K)",
+    "Jeriah anak Simon",
+    "Aifa Nur Bestari binti Raduan",
+    "Hairol bin Ismail",
+    "Nur Fadzliah Amal binti Osman",
+    "Muhammad Zulhusaini bin Abdul Wahab"
+  ],
+  3: [
+    "Ting Hua Ee (K)",
+    "Khairi bin Sahari",
+    "Teng Ru Yun",
+    "Mary Jane Amoi Umpang anak Daniel Mawat",
+    "Vanitha a/p Subramaniam"
+  ],
+  4: [
+    "Zeprina anak Benik (K)",
+    "Jacqueline Tiong Hoe Ding",
+    "Nur Hidayu binti Yusop",
+    "Fazri bin Bakeri",
+    "Bryan anak Constant"
+  ],
+  5: [
+    "Eifilisia Amber anak Mervin (K)",
+    "Sabariah binti Solhi",
+    "Jimmy anak Peter",
+    "Nurul Huda bte Mohd Ihwan",
+    "Wong Pick King",
+    "Christian Simon"
+  ]
+};
+
+// Komponen Textarea yang auto-resize
+const AutoResizeTextarea = ({ value, onChange, placeholder, className = "" }) => {
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+    }
+  }, [value]);
+
+  return (
+    <textarea
+      ref={textareaRef}
+      className={`w-full p-2 border border-gray-200 focus:border-blue-400 rounded-md print:border-none print:p-0 resize-none overflow-hidden outline-none bg-white transition-colors ${className}`}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      rows={1}
+    />
+  );
+};
+
+// Senarai Pentadbir
+const pentadbirList = [
+  { nama: "AZIZ BIN TAHIR", jawatan: "GURU BESAR" },
+  { nama: "MOHAMAD ABIDIN BIN SIPEK", jawatan: "PK PENTADBIRAN" },
+  { nama: "LING MEE CHOO", jawatan: "PK HEM" },
+  { nama: "SALIHIN BIN AHMAD", jawatan: "PK KOKURIKULUM" }
+];
+
+// Komponen Tandatangan
+const SignaturePad = ({ onSave, label }) => {
+  const canvasRef = useRef(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+
+  const startDrawing = (e) => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+    const clientX = (e.clientX || (e.touches && e.touches[0].clientX));
+    const clientY = (e.clientY || (e.touches && e.touches[0].clientY));
+    ctx.beginPath();
+    ctx.moveTo(clientX - rect.left, clientY - rect.top);
+    setIsDrawing(true);
+  };
+
+  const draw = (e) => {
+    if (!isDrawing) return;
+    e.preventDefault(); 
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+    const clientX = (e.clientX || (e.touches && e.touches[0].clientX));
+    const clientY = (e.clientY || (e.touches && e.touches[0].clientY));
+    ctx.lineTo(clientX - rect.left, clientY - rect.top);
+    ctx.stroke();
+  };
+
+  const stopDrawing = () => {
+    if (isDrawing) {
+      setIsDrawing(false);
+      onSave(canvasRef.current.toDataURL());
+    }
+  };
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = 'black';
+    }
+  }, []);
+
+  return (
+    <div className="flex flex-col items-center gap-1 print:hidden mb-4 w-full">
+      <div className="border border-dashed border-blue-300 bg-blue-50/30 rounded overflow-hidden">
+        <canvas
+          ref={canvasRef}
+          width={240}
+          height={80}
+          onMouseDown={startDrawing}
+          onMouseMove={draw}
+          onMouseUp={stopDrawing}
+          onMouseLeave={stopDrawing}
+          onTouchStart={startDrawing}
+          onTouchMove={draw}
+          onTouchEnd={stopDrawing}
+          className="cursor-crosshair touch-none bg-white"
+        />
+      </div>
+      <div className="flex justify-between w-[240px] px-1 text-xs">
+        <span className="text-gray-500 italic">{label}</span>
+        <button onClick={() => {
+          const ctx = canvasRef.current.getContext('2d');
+          ctx.clearRect(0, 0, 240, 80);
+          onSave(null);
+        }} className="text-red-500 font-medium">Padam</button>
+      </div>
+    </div>
+  );
+};
+
+export default function App() {
+  const [kumpulanGuru, setKumpulanGuru] = useState(initialKumpulanGuru);
+  const [isAddingTeacher, setIsAddingTeacher] = useState(false);
+  const [newTeacherName, setNewTeacherName] = useState('');
+  const [tarikh, setTarikh] = useState(new Date().toISOString().split('T')[0]);
+  const [kumpulan, setKumpulan] = useState(1);
+  const [disediakanOleh, setDisediakanOleh] = useState('');
+  const [penyemakIndex, setPenyemakIndex] = useState(0);
+  const [signDisediakan, setSignDisediakan] = useState(null);
+  const [signDisemak, setSignDisemak] = useState(null);
+
+  // State Rekod Laporan
+  const [rekodSimpanan, setRekodSimpanan] = useState(() => {
+    const saved = localStorage.getItem('skpk_miri_rekod_v2');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // State untuk kandungan spesifik
+  const [contentBicara, setContentBicara] = useState({ nama: '', tajuk: '', catatan: '' });
+  const [contentPerkongsian, setContentPerkongsian] = useState({ nama: '', tajuk: '', catatan: '' });
+  const [contentPK, setContentPK] = useState('');
+  const [contentGB, setContentGB] = useState('');
+  const [contentLain, setContentLain] = useState('');
+
+  useEffect(() => {
+    localStorage.setItem('skpk_miri_rekod_v2', JSON.stringify(rekodSimpanan));
+  }, [rekodSimpanan]);
+
+  useEffect(() => {
+    const ketua = kumpulanGuru[kumpulan][0].replace(' (K)', '').replace('(K)', '');
+    setDisediakanOleh(ketua);
+  }, [kumpulan, kumpulanGuru]);
+
+  const clearForm = () => {
+    if (confirm('Adakah anda pasti mahu mengosongkan semua maklumat?')) {
+      setContentBicara({ nama: '', tajuk: '', catatan: '' });
+      setContentPerkongsian({ nama: '', tajuk: '', catatan: '' });
+      setContentPK('');
+      setContentGB('');
+      setContentLain('');
+      setSignDisediakan(null);
+      setSignDisemak(null);
+    }
+  };
+
+  const handleRekod = () => {
+    const dataBaru = {
+      id: Date.now(),
+      tarikh: tarikh,
+      kumpulan: kumpulan,
+      disediakanOleh: disediakanOleh,
+      contentBicara,
+      contentPerkongsian,
+      contentPK,
+      contentGB,
+      contentLain,
+      penyemakIndex,
+      signDisediakan,
+      signDisemak
+    };
+    setRekodSimpanan([dataBaru, ...rekodSimpanan]);
+    alert("Laporan telah direkodkan ke dalam arkib.");
+  };
+
+  const handleViewRekod = (rekod) => {
+    setTarikh(rekod.tarikh);
+    setKumpulan(rekod.kumpulan);
+    setDisediakanOleh(rekod.disediakanOleh);
+    setContentBicara(rekod.contentBicara);
+    setContentPerkongsian(rekod.contentPerkongsian);
+    setContentPK(rekod.contentPK);
+    setContentGB(rekod.contentGB);
+    setContentLain(rekod.contentLain);
+    setPenyemakIndex(rekod.penyemakIndex);
+    setSignDisediakan(rekod.signDisediakan);
+    setSignDisemak(rekod.signDisemak);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    alert("Data rekod telah dimuatkan ke dalam borang.");
+  };
+
+  const handleDeleteRekod = (id) => {
+    if (confirm("Adakah anda pasti mahu memadam rekod ini?")) {
+      setRekodSimpanan(rekodSimpanan.filter(r => r.id !== id));
+    }
+  };
+
+  const getHariBM = (tarikhStr) => {
+    if (!tarikhStr) return '';
+    const days = ["Ahad", "Isnin", "Selasa", "Rabu", "Khamis", "Jumaat", "Sabtu"];
+    const date = new Date(tarikhStr);
+    return days[date.getDay()];
+  };
+
+  const formatTarikhBM = (tarikhStr) => {
+    if (!tarikhStr) return '';
+    const date = new Date(tarikhStr);
+    const months = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
+    return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-100 p-4 md:p-8 print:p-0 print:bg-white font-sans text-gray-900">
+      
+      <div className="max-w-4xl mx-auto bg-white p-8 md:p-12 shadow-xl print:shadow-none print:max-w-full print:w-full print:p-4 rounded-xl print:rounded-none mb-12">
+        
+        {/* Header Rasmi */}
+        <div className="flex flex-col items-center mb-8 border-b-2 border-slate-800 pb-6 relative">
+          <img 
+            src="image_63ab22.jpg" 
+            alt="Logo" 
+            className="w-28 h-28 object-contain absolute left-0 top-0 print:w-24 print:h-24"
+          />
+          <div className="text-center w-full px-32">
+            <h1 className="text-xl md:text-2xl font-bold uppercase tracking-wide">
+              Sekolah Kebangsaan Pendidikan Khas Miri
+            </h1>
+            <h2 className="text-lg md:text-xl font-semibold mt-2 underline underline-offset-4 uppercase">
+              Laporan Perhimpunan Mingguan
+            </h2>
+          </div>
+        </div>
+
+        {/* Maklumat Asas */}
+        <div className="mb-8 space-y-3">
+          <div className="flex items-center gap-4">
+            <label className="font-semibold w-48 text-gray-700 print:text-black">Tarikh / Hari:</label>
+            <div className="flex items-center gap-2 print:hidden">
+              <input type="date" value={tarikh} onChange={e => setTarikh(e.target.value)} className="border border-gray-300 px-3 py-1.5 rounded-md outline-none" />
+              <span className="bg-slate-100 px-3 py-1.5 rounded-md font-medium text-slate-600 border border-slate-200">
+                {getHariBM(tarikh)}
+              </span>
+            </div>
+            <span className="hidden print:inline-block font-medium">
+              {formatTarikhBM(tarikh)} ({getHariBM(tarikh)})
+            </span>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <label className="font-semibold w-48 text-gray-700 print:text-black">Kumpulan Bertugas:</label>
+            <select value={kumpulan} onChange={e => setKumpulan(Number(e.target.value))} className="border border-gray-300 px-3 py-1.5 rounded-md print:hidden outline-none w-48">
+              {[1, 2, 3, 4, 5].map(num => <option key={num} value={num}>Kumpulan {num}</option>)}
+            </select>
+            <span className="hidden print:inline-block font-medium">Kumpulan {kumpulan}</span>
+          </div>
+
+          <div className="mt-4">
+            <label className="font-semibold block mb-2 text-gray-700 print:text-black">Ahli-ahli Kumpulan Bertugas:</label>
+            <ol className="list-decimal list-outside ml-6 space-y-1">
+              {kumpulanGuru[kumpulan].map((nama, index) => (
+                <li key={index} className="pl-2">{nama}</li>
+              ))}
+            </ol>
+            <div className="mt-2 ml-6 print:hidden">
+              {isAddingTeacher ? (
+                <div className="flex gap-2 items-center mt-2">
+                  <input type="text" value={newTeacherName} onChange={(e) => setNewTeacherName(e.target.value)} className="border border-gray-300 px-2 py-1 rounded text-sm outline-none" placeholder="Nama guru..." />
+                  <button onClick={() => {
+                    if (newTeacherName.trim()) {
+                      setKumpulanGuru(prev => ({...prev, [kumpulan]: [...prev[kumpulan], newTeacherName.trim()]}));
+                      setNewTeacherName('');
+                      setIsAddingTeacher(false);
+                    }
+                  }} className="bg-blue-600 text-white px-3 py-1 rounded text-sm">Simpan</button>
+                  <button onClick={() => setIsAddingTeacher(false)} className="text-red-500 text-sm font-medium">Batal</button>
+                </div>
+              ) : (
+                <button onClick={() => setIsAddingTeacher(true)} className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1 mt-1">
+                  <Plus size={14} /> Tambah Guru
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Jadual Pengisian */}
+        <div className="mb-12">
+          <h3 className="font-semibold mb-3 text-gray-700 print:text-black">Pengisian Sesi Perhimpunan:</h3>
+          <div className="border border-black">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-slate-100 print:bg-gray-100">
+                  <th className="border border-black px-2 py-2 text-center w-10">No.</th>
+                  <th className="border border-black px-4 py-2 text-left w-1/4">Agenda</th>
+                  <th className="border border-black px-4 py-2 text-left">Kandungan</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="border border-black px-2 py-3 text-center align-top font-medium">1</td>
+                  <td className="border border-black px-4 py-3 align-top font-semibold">Bicara Guru</td>
+                  <td className="border border-black p-4 space-y-3">
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 uppercase block mb-1 print:text-black">Nama Guru</label>
+                      <AutoResizeTextarea value={contentBicara.nama} onChange={e => setContentBicara({...contentBicara, nama: e.target.value})} placeholder="Nama Guru..." />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 uppercase block mb-1 print:text-black">Tajuk</label>
+                      <AutoResizeTextarea value={contentBicara.tajuk} onChange={e => setContentBicara({...contentBicara, tajuk: e.target.value})} placeholder="Tajuk Bicara..." />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 uppercase block mb-1 print:text-black">Catatan</label>
+                      <AutoResizeTextarea value={contentBicara.catatan} onChange={e => setContentBicara({...contentBicara, catatan: e.target.value})} placeholder="Catatan tambahan..." />
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-black px-2 py-3 text-center align-top font-medium">2</td>
+                  <td className="border border-black px-4 py-3 align-top font-semibold">Perkongsian Murid</td>
+                  <td className="border border-black p-4 space-y-3">
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 uppercase block mb-1 print:text-black">Nama Murid</label>
+                      <AutoResizeTextarea value={contentPerkongsian.nama} onChange={e => setContentPerkongsian({...contentPerkongsian, nama: e.target.value})} placeholder="Nama Murid..." />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 uppercase block mb-1 print:text-black">Tajuk</label>
+                      <AutoResizeTextarea value={contentPerkongsian.tajuk} onChange={e => setContentPerkongsian({...contentPerkongsian, tajuk: e.target.value})} placeholder="Tajuk Perkongsian..." />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 uppercase block mb-1 print:text-black">Catatan</label>
+                      <AutoResizeTextarea value={contentPerkongsian.catatan} onChange={e => setContentPerkongsian({...contentPerkongsian, catatan: e.target.value})} placeholder="Catatan tambahan..." />
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-black px-2 py-3 text-center align-top font-medium">3</td>
+                  <td className="border border-black px-4 py-3 align-top font-semibold">Ucapan Penolong Kanan</td>
+                  <td className="border border-black p-2 align-top">
+                    <AutoResizeTextarea value={contentPK} onChange={e => setContentPK(e.target.value)} placeholder="Catatan ucapan PK..." className="border-none" />
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-black px-2 py-3 text-center align-top font-medium">4</td>
+                  <td className="border border-black px-4 py-3 align-top font-semibold">Ucapan Guru Besar</td>
+                  <td className="border border-black p-2 align-top">
+                    <AutoResizeTextarea value={contentGB} onChange={e => setContentGB(e.target.value)} placeholder="Catatan ucapan Guru Besar..." className="border-none" />
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-black px-2 py-3 text-center align-top font-medium">5</td>
+                  <td className="border border-black px-4 py-3 align-top font-semibold">Lain-lain</td>
+                  <td className="border border-black p-2 align-top">
+                    <AutoResizeTextarea value={contentLain} onChange={e => setContentLain(e.target.value)} placeholder="Catatan lain-lain..." className="border-none" />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Tandatangan */}
+        <div className="flex flex-col sm:flex-row justify-between mt-16 pt-8 break-inside-avoid gap-12 sm:gap-0">
+          <div className="w-full sm:w-72 flex flex-col items-center">
+            <p className="w-full text-left mb-4 font-medium">Disediakan oleh:</p>
+            <SignaturePad onSave={setSignDisediakan} label="Tandatangan Penyedia" />
+            <div className="h-24 w-full flex items-end justify-center border-b border-black mb-2 relative">
+              {signDisediakan && <img src={signDisediakan} alt="Sign" className="absolute bottom-0 max-h-24 object-contain" />}
+            </div>
+            <div className="w-full print:hidden mb-2">
+              <select className="w-full bg-slate-50 py-2 text-center font-bold uppercase border border-gray-200 rounded text-sm" value={disediakanOleh} onChange={e => setDisediakanOleh(e.target.value)}>
+                {kumpulanGuru[kumpulan].map(guru => {
+                  const n = guru.replace(' (K)', '').replace('(K)', '');
+                  return <option key={n} value={n}>{n}</option>;
+                })}
+              </select>
+            </div>
+            <p className="font-bold uppercase text-center mt-2">({disediakanOleh || '................................'})</p>
+            <p className="text-center text-sm mt-1">Guru Bertugas Mingguan</p>
+          </div>
+
+          <div className="w-full sm:w-72 flex flex-col items-center">
+            <p className="w-full text-left mb-4 font-medium">Disemak oleh:</p>
+            <SignaturePad onSave={setSignDisemak} label="Tandatangan Penyemak" />
+            <div className="h-24 w-full flex items-end justify-center border-b border-black mb-2 relative">
+              {signDisemak && <img src={signDisemak} alt="Sign" className="absolute bottom-0 max-h-24 object-contain" />}
+            </div>
+            <div className="w-full print:hidden mb-2">
+              <select className="w-full bg-slate-50 py-2 text-center font-bold uppercase border border-gray-200 rounded text-sm" value={penyemakIndex} onChange={e => setPenyemakIndex(Number(e.target.value))}>
+                {pentadbirList.map((p, i) => <option key={i} value={i}>{p.nama} ({p.jawatan})</option>)}
+              </select>
+            </div>
+            <p className="font-bold uppercase text-center mt-2">({pentadbirList[penyemakIndex].nama})</p>
+            <p className="text-center text-sm mt-1">{pentadbirList[penyemakIndex].jawatan}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Bahagian Sejarah Rekod (Hanya pada skrin) */}
+      {rekodSimpanan.length > 0 && (
+        <div className="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-lg mb-24 print:hidden">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2 text-blue-700">
+              <History size={20} />
+              <h3 className="font-bold">Arkib Rekod Laporan</h3>
+            </div>
+            <span className="text-xs text-slate-400 bg-slate-50 px-2 py-1 rounded">Autosave Aktif</span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wider">
+                  <th className="p-3 text-left">Tarikh / Hari</th>
+                  <th className="p-3 text-left">Kumpulan</th>
+                  <th className="p-3 text-left">Penyedia</th>
+                  <th className="p-3 text-center">Tindakan</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {rekodSimpanan.map((rekod) => (
+                  <tr key={rekod.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="p-3 font-medium whitespace-nowrap">
+                      {formatTarikhBM(rekod.tarikh)} ({getHariBM(rekod.tarikh)})
+                    </td>
+                    <td className="p-3 whitespace-nowrap font-medium text-slate-600">Kumpulan {rekod.kumpulan}</td>
+                    <td className="p-3">{rekod.disediakanOleh}</td>
+                    <td className="p-3">
+                      <div className="flex justify-center gap-2">
+                        <button 
+                          onClick={() => handleViewRekod(rekod)}
+                          className="flex items-center gap-1 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-md hover:bg-blue-100 transition-colors"
+                          title="Lihat & Cetak"
+                        >
+                          <Eye size={14} />
+                          <span>Lihat PDF</span>
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteRekod(rekod.id)}
+                          className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                          title="Padam Rekod"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Panel Kawalan Floating */}
+      <div className="fixed bottom-6 right-6 flex items-center bg-white p-2 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-100 print:hidden z-50">
+        <button onClick={clearForm} className="p-2.5 text-red-500 hover:bg-red-50 rounded-lg mr-1" title="Kosongkan">
+          <Trash2 size={20} />
+        </button>
+        <div className="w-px h-8 bg-slate-200 mx-1"></div>
+        <div className="flex items-center gap-2 ml-2">
+          <button 
+            onClick={handleRekod}
+            className="flex items-center gap-2 bg-green-600 text-white px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-green-700 transition-all shadow-sm"
+          >
+            <Save size={18} /> <span>Rekod</span>
+          </button>
+          <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-blue-700">
+            <Pencil size={18} /> <span>Edit Data</span>
+          </button>
+          <button onClick={() => window.print()} className="flex items-center gap-2 bg-slate-100 text-slate-700 px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-slate-200">
+            <Printer size={18} /> <span>Paparan Cetak</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
