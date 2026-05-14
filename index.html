@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Laporan Perhimpunan SKPK Miri</title>
+  <title>Sistem Laporan Perhimpunan SKPK Miri</title>
   
   <!-- Memuatkan Tailwind CSS untuk gaya dan rekaan -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -36,53 +36,37 @@
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
-    // --- Ikon SVG Sebaris (Bagi menggantikan lucide-react untuk HTML standalone) ---
-    const IconPrinter = ({ size = 24 }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-    );
-    const IconTrash2 = ({ size = 24 }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-    );
-    const IconPencil = ({ size = 24 }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
-    );
-    const IconPlus = ({ size = 24 }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-    );
-    const IconSave = ({ size = 24 }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-    );
-    const IconHistory = ({ size = 24 }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>
-    );
-    const IconEye = ({ size = 24 }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-    );
+    // --- Ikon SVG Sebaris ---
+    const IconPrinter = ({ size = 18 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>;
+    const IconTrash2 = ({ size = 18 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>;
+    const IconPencil = ({ size = 18 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>;
+    const IconPlus = ({ size = 16 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>;
+    const IconSave = ({ size = 18 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>;
+    const IconHistory = ({ size = 18 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></svg>;
+    const IconEye = ({ size = 18 }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>;
 
-    // --- Data Guru Mengikut Kumpulan (Sesi 2026) ---
+    // --- Data Guru (Format Objek untuk Edit Mudah) ---
     const initialKumpulanGuru = {
-      1: ["Mohd Rafeeq bin Sulaiman (K)", "Hilwa Hayati binti Mohamad Ajalan", "Nur Azlin binti Norizan", "Ting Yu Yong", "Syaeeza Liana binti Ramli"],
-      2: ["Dliyana anak John (K)", "Jeriah anak Simon", "Aifa Nur Bestari binti Raduan", "Hairol bin Ismail", "Nur Fadzliah Amal binti Osman", "Muhammad Zulhusaini bin Abdul Wahab"],
-      3: ["Ting Hua Ee (K)", "Khairi bin Sahari", "Teng Ru Yun", "Mary Jane Amoi Umpang anak Daniel Mawat", "Vanitha a/p Subramaniam"],
-      4: ["Zeprina anak Benik (K)", "Jacqueline Tiong Hoe Ding", "Nur Hidayu binti Yusop", "Fazri bin Bakeri", "Bryan anak Constant"],
-      5: ["Eifilisia Amber anak Mervin (K)", "Sabariah binti Solhi", "Jimmy anak Peter", "Nurul Huda bte Mohd Ihwan", "Wong Pick King", "Christian Simon"]
+      1: [{n: "Mohd Rafeeq bin Sulaiman", r: "(K)"}, {n: "Hilwa Hayati binti Mohamad Ajalan", r: ""}, {n: "Nur Azlin binti Norizan", r: ""}, {n: "Ting Yu Yong", r: ""}, {n: "Syaeeza Liana binti Ramli", r: ""}],
+      2: [{n: "Dliyana anak John", r: "(K)"}, {n: "Jeriah anak Simon", r: ""}, {n: "Aifa Nur Bestari binti Raduan", r: ""}, {n: "Hairol bin Ismail", r: ""}, {n: "Nur Fadzliah Amal binti Osman", r: ""}, {n: "Muhammad Zulhusaini bin Abdul Wahab", r: ""}],
+      3: [{n: "Ting Hua Ee", r: "(K)"}, {n: "Khairi bin Sahari", r: ""}, {n: "Teng Ru Yun", r: ""}, {n: "Mary Jane Amoi Umpang anak Daniel Mawat", r: ""}, {n: "Vanitha a/p Subramaniam", r: ""}],
+      4: [{n: "Zeprina anak Benik", r: "(K)"}, {n: "Jacqueline Tiong Hoe Ding", r: ""}, {n: "Nur Hidayu binti Yusop", r: ""}, {n: "Fazri bin Bakeri", r: ""}, {n: "Bryan anak Constant", r: ""}],
+      5: [{n: "Eifilisia Amber anak Mervin", r: "(K)"}, {n: "Sabariah binti Solhi", r: ""}, {n: "Jimmy anak Peter", r: ""}, {n: "Nurul Huda bte Mohd Ihwan", r: ""}, {n: "Wong Pick King", r: ""}, {n: "Christian Simon", r: ""}]
     };
 
-    // --- Komponen Textarea yang auto-resize ---
+    // --- Komponen Textarea auto-resize ---
     const AutoResizeTextarea = ({ value, onChange, placeholder, className = "" }) => {
       const textareaRef = useRef(null);
-
       useEffect(() => {
         if (textareaRef.current) {
           textareaRef.current.style.height = 'auto';
           textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
         }
       }, [value]);
-
       return (
         <textarea
           ref={textareaRef}
-          className={`w-full p-2 border border-gray-200 focus:border-blue-400 rounded-md print:border-none print:p-0 resize-none overflow-hidden outline-none bg-white transition-colors ${className}`}
+          className={`w-full p-2.5 border border-slate-300 focus:border-blue-500 rounded-md print:border-none print:p-0 resize-none overflow-hidden outline-none bg-white transition-colors text-sm ${className}`}
           value={value}
           onChange={onChange}
           placeholder={placeholder}
@@ -91,7 +75,6 @@
       );
     };
 
-    // --- Senarai Pentadbir ---
     const pentadbirList = [
       { nama: "AZIZ BIN TAHIR", jawatan: "GURU BESAR" },
       { nama: "MOHAMAD ABIDIN BIN SIPEK", jawatan: "PK PENTADBIRAN" },
@@ -100,7 +83,7 @@
     ];
 
     // --- Komponen Tandatangan ---
-    const SignaturePad = ({ onSave, label }) => {
+    const SignaturePad = ({ onSave, currentSign }) => {
       const canvasRef = useRef(null);
       const [isDrawing, setIsDrawing] = useState(false);
 
@@ -140,17 +123,22 @@
           const ctx = canvas.getContext('2d');
           ctx.lineWidth = 2;
           ctx.lineCap = 'round';
-          ctx.strokeStyle = 'black';
+          ctx.strokeStyle = '#0f172a';
         }
       }, []);
 
       return (
-        <div className="flex flex-col items-center gap-1 print:hidden mb-4 w-full">
-          <div className="border border-dashed border-blue-300 bg-blue-50/30 rounded overflow-hidden">
+        <div className="flex flex-col gap-1 print:hidden w-full relative">
+          <div className="border-2 border-dashed border-slate-300 bg-slate-50 rounded-lg overflow-hidden relative">
+            {!currentSign && (
+              <span className="absolute inset-0 flex items-center justify-center text-slate-300 text-xs italic pointer-events-none">
+                Lukis tandatangan di sini
+              </span>
+            )}
             <canvas
               ref={canvasRef}
-              width={240}
-              height={80}
+              width={260}
+              height={100}
               onMouseDown={startDrawing}
               onMouseMove={draw}
               onMouseUp={stopDrawing}
@@ -158,16 +146,15 @@
               onTouchStart={startDrawing}
               onTouchMove={draw}
               onTouchEnd={stopDrawing}
-              className="cursor-crosshair touch-none bg-white"
+              className="cursor-crosshair touch-none w-full bg-transparent relative z-10"
             />
           </div>
-          <div className="flex justify-between w-[240px] px-1 text-xs">
-            <span className="text-gray-500 italic">{label}</span>
+          <div className="flex justify-end">
             <button onClick={() => {
               const ctx = canvasRef.current.getContext('2d');
-              ctx.clearRect(0, 0, 240, 80);
+              ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
               onSave(null);
-            }} className="text-red-500 font-medium">Padam</button>
+            }} className="text-red-500 hover:text-red-600 font-medium text-[10px]">Padam</button>
           </div>
         </div>
       );
@@ -176,18 +163,20 @@
     // --- Komponen Utama Aplikasi ---
     function App() {
       const [kumpulanGuru, setKumpulanGuru] = useState(initialKumpulanGuru);
-      const [isAddingTeacher, setIsAddingTeacher] = useState(false);
-      const [newTeacherName, setNewTeacherName] = useState('');
       const [tarikh, setTarikh] = useState(new Date().toISOString().split('T')[0]);
       const [kumpulan, setKumpulan] = useState(1);
-      const [disediakanOleh, setDisediakanOleh] = useState('');
-      const [penyemakIndex, setPenyemakIndex] = useState(0);
+      
+      const [disediakanOlehNama, setDisediakanOlehNama] = useState('');
+      const [disediakanOlehJawatan, setDisediakanOlehJawatan] = useState('Guru Bertugas Mingguan');
+      const [disemakOlehNama, setDisemakOlehNama] = useState(pentadbirList[0].nama);
+      const [disemakOlehJawatan, setDisemakOlehJawatan] = useState(pentadbirList[0].jawatan);
+      
       const [signDisediakan, setSignDisediakan] = useState(null);
       const [signDisemak, setSignDisemak] = useState(null);
 
       // State Rekod Laporan (LocalStorage)
       const [rekodSimpanan, setRekodSimpanan] = useState(() => {
-        const saved = localStorage.getItem('skpk_miri_rekod_v2');
+        const saved = localStorage.getItem('skpk_miri_rekod_v3');
         return saved ? JSON.parse(saved) : [];
       });
 
@@ -199,13 +188,22 @@
       const [contentLain, setContentLain] = useState('');
 
       useEffect(() => {
-        localStorage.setItem('skpk_miri_rekod_v2', JSON.stringify(rekodSimpanan));
+        localStorage.setItem('skpk_miri_rekod_v3', JSON.stringify(rekodSimpanan));
       }, [rekodSimpanan]);
 
       useEffect(() => {
-        const ketua = kumpulanGuru[kumpulan][0].replace(' (K)', '').replace('(K)', '');
-        setDisediakanOleh(ketua);
+        // Update Default Ketua based on group selection
+        if(kumpulanGuru[kumpulan] && kumpulanGuru[kumpulan].length > 0) {
+           setDisediakanOlehNama(kumpulanGuru[kumpulan][0].n);
+        }
       }, [kumpulan, kumpulanGuru]);
+
+      // Handle Admin Selection
+      const handleAdminSelect = (e) => {
+        const index = e.target.value;
+        setDisemakOlehNama(pentadbirList[index].nama);
+        setDisemakOlehJawatan(pentadbirList[index].jawatan);
+      };
 
       const clearForm = () => {
         if (confirm('Adakah anda pasti mahu mengosongkan semua maklumat?')) {
@@ -224,15 +222,17 @@
           id: Date.now(),
           tarikh: tarikh,
           kumpulan: kumpulan,
-          disediakanOleh: disediakanOleh,
+          disediakanOleh: disediakanOlehNama,
           contentBicara,
           contentPerkongsian,
           contentPK,
           contentGB,
           contentLain,
-          penyemakIndex,
+          disemakOlehNama,
+          disemakOlehJawatan,
           signDisediakan,
-          signDisemak
+          signDisemak,
+          ahliGroup: kumpulanGuru[kumpulan]
         };
         setRekodSimpanan([dataBaru, ...rekodSimpanan]);
         alert("Laporan telah direkodkan ke dalam arkib.");
@@ -241,17 +241,22 @@
       const handleViewRekod = (rekod) => {
         setTarikh(rekod.tarikh);
         setKumpulan(rekod.kumpulan);
-        setDisediakanOleh(rekod.disediakanOleh);
+        setDisediakanOlehNama(rekod.disediakanOleh);
         setContentBicara(rekod.contentBicara);
         setContentPerkongsian(rekod.contentPerkongsian);
         setContentPK(rekod.contentPK);
         setContentGB(rekod.contentGB);
         setContentLain(rekod.contentLain);
-        setPenyemakIndex(rekod.penyemakIndex);
+        setDisemakOlehNama(rekod.disemakOlehNama);
+        setDisemakOlehJawatan(rekod.disemakOlehJawatan);
         setSignDisediakan(rekod.signDisediakan);
         setSignDisemak(rekod.signDisemak);
+        
+        if(rekod.ahliGroup) {
+           setKumpulanGuru(prev => ({ ...prev, [rekod.kumpulan]: rekod.ahliGroup }));
+        }
+
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        alert("Data rekod telah dimuatkan ke dalam borang.");
       };
 
       const handleDeleteRekod = (id) => {
@@ -260,13 +265,32 @@
         }
       };
 
+      // Fungsian Edit Senarai Ahli
+      const updateAhli = (index, field, value) => {
+        const newGroup = [...kumpulanGuru[kumpulan]];
+        newGroup[index][field] = value;
+        setKumpulanGuru({ ...kumpulanGuru, [kumpulan]: newGroup });
+      };
+
+      const addAhli = () => {
+        setKumpulanGuru({
+          ...kumpulanGuru,
+          [kumpulan]: [...kumpulanGuru[kumpulan], { n: "", r: "" }]
+        });
+      };
+
+      const removeAhli = (index) => {
+        const newGroup = kumpulanGuru[kumpulan].filter((_, i) => i !== index);
+        setKumpulanGuru({ ...kumpulanGuru, [kumpulan]: newGroup });
+      };
+
+      // Format Tarikh
       const getHariBM = (tarikhStr) => {
         if (!tarikhStr) return '';
         const days = ["Ahad", "Isnin", "Selasa", "Rabu", "Khamis", "Jumaat", "Sabtu"];
         const date = new Date(tarikhStr);
         return days[date.getDay()];
       };
-
       const formatTarikhBM = (tarikhStr) => {
         if (!tarikhStr) return '';
         const date = new Date(tarikhStr);
@@ -274,236 +298,204 @@
         return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
       };
 
-      return (
-        <div className="min-h-screen p-4 md:p-8 print:p-0 print:bg-white font-sans text-gray-900 pb-32">
+      // ==========================================
+      // VIEW: WEB LAYOUT (Seperti dalam gambar Mockup)
+      // ==========================================
+      const WebView = () => (
+        <div className="max-w-4xl mx-auto print:hidden pb-24">
           
-          <div className="max-w-4xl mx-auto bg-white p-8 md:p-12 shadow-xl print:shadow-none print:max-w-full print:w-full print:p-4 rounded-xl print:rounded-none mb-12">
-            
-            {/* Header Rasmi */}
-            <div className="flex flex-col items-center mb-8 border-b-2 border-slate-800 pb-6 relative">
-              <img 
-                src="image_63ab22.jpg" 
-                alt="Logo" 
-                className="w-28 h-28 object-contain absolute left-0 top-0 print:w-24 print:h-24"
-                onError={(e) => { e.target.style.display='none' }}
-              />
-              <div className="text-center w-full px-32">
-                <h1 className="text-xl md:text-2xl font-bold uppercase tracking-wide">
-                  Sekolah Kebangsaan Pendidikan Khas Miri
-                </h1>
-                <h2 className="text-lg md:text-xl font-semibold mt-2 underline underline-offset-4 uppercase">
-                  Laporan Perhimpunan Mingguan
-                </h2>
-              </div>
+          {/* Header Aplikasi (Top Bar) */}
+          <div className="flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm mb-6 border border-slate-200">
+            <h2 className="font-bold text-lg text-slate-800 mb-4 md:mb-0">Sistem Laporan Perhimpunan</h2>
+            <div className="flex gap-2">
+              <button onClick={clearForm} className="p-2.5 text-red-500 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" title="Kosongkan Data">
+                <IconTrash2 />
+              </button>
+              <button onClick={handleRekod} className="flex items-center gap-1.5 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
+                <IconSave size={16} /> Rekod
+              </button>
+              <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-1.5 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+                <IconPencil size={16} /> Edit Data
+              </button>
+              <button onClick={() => window.print()} className="flex items-center gap-1.5 bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium border border-slate-200 hover:bg-slate-200 transition-colors">
+                <IconPrinter size={16} /> Paparan Cetak
+              </button>
             </div>
+          </div>
 
-            {/* Maklumat Asas */}
-            <div className="mb-8 space-y-3">
-              <div className="flex items-center gap-4">
-                <label className="font-semibold w-48 text-gray-700 print:text-black">Tarikh / Hari:</label>
-                <div className="flex items-center gap-2 print:hidden">
-                  <input type="date" value={tarikh} onChange={e => setTarikh(e.target.value)} className="border border-gray-300 px-3 py-1.5 rounded-md outline-none" />
-                  <span className="bg-slate-100 px-3 py-1.5 rounded-md font-medium text-slate-600 border border-slate-200">
+          {/* Kad 1: Maklumat Asas & Senarai Ahli */}
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-6">
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase mb-2">Tarikh</label>
+                <div className="flex items-center gap-2">
+                  <input type="date" value={tarikh} onChange={e => setTarikh(e.target.value)} className="w-full border border-slate-300 p-2.5 rounded-lg text-sm outline-none focus:border-blue-500" />
+                  <span className="bg-slate-100 text-slate-600 px-3 py-2.5 rounded-lg text-sm font-medium border border-slate-200 w-24 text-center">
                     {getHariBM(tarikh)}
                   </span>
                 </div>
-                <span className="hidden print:inline-block font-medium">
-                  {formatTarikhBM(tarikh)} ({getHariBM(tarikh)})
-                </span>
               </div>
-
-              <div className="flex items-center gap-4">
-                <label className="font-semibold w-48 text-gray-700 print:text-black">Kumpulan Bertugas:</label>
-                <select value={kumpulan} onChange={e => setKumpulan(Number(e.target.value))} className="border border-gray-300 px-3 py-1.5 rounded-md print:hidden outline-none w-48">
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase mb-2">Kumpulan Bertugas</label>
+                <select value={kumpulan} onChange={e => setKumpulan(Number(e.target.value))} className="w-full border border-slate-300 p-2.5 rounded-lg text-sm outline-none focus:border-blue-500">
                   {[1, 2, 3, 4, 5].map(num => <option key={num} value={num}>Kumpulan {num}</option>)}
                 </select>
-                <span className="hidden print:inline-block font-medium">Kumpulan {kumpulan}</span>
               </div>
+            </div>
 
-              <div className="mt-4">
-                <label className="font-semibold block mb-2 text-gray-700 print:text-black">Ahli-ahli Kumpulan Bertugas:</label>
-                <ol className="list-decimal list-outside ml-6 space-y-1">
-                  {kumpulanGuru[kumpulan].map((nama, index) => (
-                    <li key={index} className="pl-2">{nama}</li>
-                  ))}
-                </ol>
-                <div className="mt-2 ml-6 print:hidden">
-                  {isAddingTeacher ? (
-                    <div className="flex gap-2 items-center mt-2">
-                      <input type="text" value={newTeacherName} onChange={(e) => setNewTeacherName(e.target.value)} className="border border-gray-300 px-2 py-1 rounded text-sm outline-none" placeholder="Nama guru..." />
-                      <button onClick={() => {
-                        if (newTeacherName.trim()) {
-                          setKumpulanGuru(prev => ({...prev, [kumpulan]: [...prev[kumpulan], newTeacherName.trim()]}));
-                          setNewTeacherName('');
-                          setIsAddingTeacher(false);
-                        }
-                      }} className="bg-blue-600 text-white px-3 py-1 rounded text-sm">Simpan</button>
-                      <button onClick={() => setIsAddingTeacher(false)} className="text-red-500 text-sm font-medium">Batal</button>
-                    </div>
-                  ) : (
-                    <button onClick={() => setIsAddingTeacher(true)} className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1 mt-1">
-                      <IconPlus size={14} /> Tambah Guru
+            {/* Senarai Ahli Kumpulan (Boleh Edit) */}
+            <div>
+              <div className="flex justify-between items-center mb-3 border-b border-slate-100 pb-2">
+                <label className="text-xs font-semibold text-slate-500 uppercase">Ahli-ahli Kumpulan Bertugas</label>
+                <button onClick={addAhli} className="text-blue-600 hover:text-blue-800 text-xs font-semibold flex items-center gap-1">
+                  <IconPlus size={14} /> Tambah Ahli
+                </button>
+              </div>
+              
+              <div className="space-y-2">
+                {kumpulanGuru[kumpulan].map((ahli, idx) => (
+                  <div key={idx} className="flex items-center gap-3">
+                    <span className="text-sm font-medium text-slate-400 w-4 text-right">{idx + 1}.</span>
+                    <input 
+                      type="text" 
+                      value={ahli.n} 
+                      onChange={(e) => updateAhli(idx, 'n', e.target.value)}
+                      placeholder="Nama guru" 
+                      className="flex-1 border border-slate-300 p-2 rounded-md text-sm outline-none focus:border-blue-500"
+                    />
+                    <input 
+                      type="text" 
+                      value={ahli.r} 
+                      onChange={(e) => updateAhli(idx, 'r', e.target.value)}
+                      placeholder="Peranan cth: (K)" 
+                      className="w-24 border border-slate-300 p-2 rounded-md text-sm outline-none focus:border-blue-500"
+                    />
+                    <button onClick={() => removeAhli(idx)} className="text-red-400 hover:text-red-600 p-1">
+                      <IconTrash2 size={16} />
                     </button>
-                  )}
-                </div>
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* Jadual Pengisian */}
-            <div className="mb-12">
-              <h3 className="font-semibold mb-3 text-gray-700 print:text-black">Pengisian Sesi Perhimpunan:</h3>
-              <div className="border border-black">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="bg-slate-100 print:bg-gray-100">
-                      <th className="border border-black px-2 py-2 text-center w-10">No.</th>
-                      <th className="border border-black px-4 py-2 text-left w-1/4">Agenda</th>
-                      <th className="border border-black px-4 py-2 text-left">Kandungan</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="border border-black px-2 py-3 text-center align-top font-medium">1</td>
-                      <td className="border border-black px-4 py-3 align-top font-semibold">Bicara Guru</td>
-                      <td className="border border-black p-4 space-y-3">
-                        <div>
-                          <label className="text-xs font-bold text-gray-500 uppercase block mb-1 print:text-black">Nama Guru</label>
-                          <AutoResizeTextarea value={contentBicara.nama} onChange={e => setContentBicara({...contentBicara, nama: e.target.value})} placeholder="Nama Guru..." />
-                        </div>
-                        <div>
-                          <label className="text-xs font-bold text-gray-500 uppercase block mb-1 print:text-black">Tajuk</label>
-                          <AutoResizeTextarea value={contentBicara.tajuk} onChange={e => setContentBicara({...contentBicara, tajuk: e.target.value})} placeholder="Tajuk Bicara..." />
-                        </div>
-                        <div>
-                          <label className="text-xs font-bold text-gray-500 uppercase block mb-1 print:text-black">Catatan</label>
-                          <AutoResizeTextarea value={contentBicara.catatan} onChange={e => setContentBicara({...contentBicara, catatan: e.target.value})} placeholder="Catatan tambahan..." />
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="border border-black px-2 py-3 text-center align-top font-medium">2</td>
-                      <td className="border border-black px-4 py-3 align-top font-semibold">Perkongsian Murid</td>
-                      <td className="border border-black p-4 space-y-3">
-                        <div>
-                          <label className="text-xs font-bold text-gray-500 uppercase block mb-1 print:text-black">Nama Murid</label>
-                          <AutoResizeTextarea value={contentPerkongsian.nama} onChange={e => setContentPerkongsian({...contentPerkongsian, nama: e.target.value})} placeholder="Nama Murid..." />
-                        </div>
-                        <div>
-                          <label className="text-xs font-bold text-gray-500 uppercase block mb-1 print:text-black">Tajuk</label>
-                          <AutoResizeTextarea value={contentPerkongsian.tajuk} onChange={e => setContentPerkongsian({...contentPerkongsian, tajuk: e.target.value})} placeholder="Tajuk Perkongsian..." />
-                        </div>
-                        <div>
-                          <label className="text-xs font-bold text-gray-500 uppercase block mb-1 print:text-black">Catatan</label>
-                          <AutoResizeTextarea value={contentPerkongsian.catatan} onChange={e => setContentPerkongsian({...contentPerkongsian, catatan: e.target.value})} placeholder="Catatan tambahan..." />
-                        </div>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="border border-black px-2 py-3 text-center align-top font-medium">3</td>
-                      <td className="border border-black px-4 py-3 align-top font-semibold">Ucapan Penolong Kanan</td>
-                      <td className="border border-black p-2 align-top">
-                        <AutoResizeTextarea value={contentPK} onChange={e => setContentPK(e.target.value)} placeholder="Catatan ucapan PK..." className="border-none" />
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="border border-black px-2 py-3 text-center align-top font-medium">4</td>
-                      <td className="border border-black px-4 py-3 align-top font-semibold">Ucapan Guru Besar</td>
-                      <td className="border border-black p-2 align-top">
-                        <AutoResizeTextarea value={contentGB} onChange={e => setContentGB(e.target.value)} placeholder="Catatan ucapan Guru Besar..." className="border-none" />
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="border border-black px-2 py-3 text-center align-top font-medium">5</td>
-                      <td className="border border-black px-4 py-3 align-top font-semibold">Lain-lain</td>
-                      <td className="border border-black p-2 align-top">
-                        <AutoResizeTextarea value={contentLain} onChange={e => setContentLain(e.target.value)} placeholder="Catatan lain-lain..." className="border-none" />
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+          </div>
 
-            {/* Tandatangan */}
-            <div className="flex flex-col sm:flex-row justify-between mt-16 pt-8 break-inside-avoid gap-12 sm:gap-0">
-              <div className="w-full sm:w-72 flex flex-col items-center">
-                <p className="w-full text-left mb-4 font-medium">Disediakan oleh:</p>
-                <SignaturePad onSave={setSignDisediakan} label="Tandatangan Penyedia" />
-                <div className="h-24 w-full flex items-end justify-center border-b border-black mb-2 relative">
-                  {signDisediakan && <img src={signDisediakan} alt="Sign" className="absolute bottom-0 max-h-24 object-contain" />}
+          {/* Kad 2: Pengisian Sesi (Struktur Kad-Kad) */}
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-6">
+            <h3 className="font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">Pengisian Sesi Perhimpunan</h3>
+            
+            <div className="space-y-4">
+              {/* 1. Bicara Guru */}
+              <div className="border border-slate-200 rounded-lg p-4 bg-slate-50/50">
+                <h4 className="text-sm font-semibold text-slate-700 mb-3">1. Bicara Guru</h4>
+                <div className="space-y-2.5">
+                  <input type="text" value={contentBicara.nama} onChange={e => setContentBicara({...contentBicara, nama: e.target.value})} placeholder="Nama Guru" className="w-full border border-slate-300 p-2.5 rounded-md text-sm outline-none focus:border-blue-500" />
+                  <input type="text" value={contentBicara.tajuk} onChange={e => setContentBicara({...contentBicara, tajuk: e.target.value})} placeholder="Tajuk" className="w-full border border-slate-300 p-2.5 rounded-md text-sm outline-none focus:border-blue-500" />
+                  <AutoResizeTextarea value={contentBicara.catatan} onChange={e => setContentBicara({...contentBicara, catatan: e.target.value})} placeholder="Catatan..." />
                 </div>
-                <div className="w-full print:hidden mb-2">
-                  <select className="w-full bg-slate-50 py-2 text-center font-bold uppercase border border-gray-200 rounded text-sm" value={disediakanOleh} onChange={e => setDisediakanOleh(e.target.value)}>
-                    {kumpulanGuru[kumpulan].map(guru => {
-                      const n = guru.replace(' (K)', '').replace('(K)', '');
-                      return <option key={n} value={n}>{n}</option>;
-                    })}
-                  </select>
-                </div>
-                <p className="font-bold uppercase text-center mt-2">({disediakanOleh || '................................'})</p>
-                <p className="text-center text-sm mt-1">Guru Bertugas Mingguan</p>
               </div>
 
-              <div className="w-full sm:w-72 flex flex-col items-center">
-                <p className="w-full text-left mb-4 font-medium">Disemak oleh:</p>
-                <SignaturePad onSave={setSignDisemak} label="Tandatangan Penyemak" />
-                <div className="h-24 w-full flex items-end justify-center border-b border-black mb-2 relative">
-                  {signDisemak && <img src={signDisemak} alt="Sign" className="absolute bottom-0 max-h-24 object-contain" />}
+              {/* 2. Perkongsian Murid */}
+              <div className="border border-slate-200 rounded-lg p-4 bg-slate-50/50">
+                <h4 className="text-sm font-semibold text-slate-700 mb-3">2. Perkongsian Murid</h4>
+                <div className="space-y-2.5">
+                  <input type="text" value={contentPerkongsian.nama} onChange={e => setContentPerkongsian({...contentPerkongsian, nama: e.target.value})} placeholder="Nama Murid" className="w-full border border-slate-300 p-2.5 rounded-md text-sm outline-none focus:border-blue-500" />
+                  <input type="text" value={contentPerkongsian.tajuk} onChange={e => setContentPerkongsian({...contentPerkongsian, tajuk: e.target.value})} placeholder="Tajuk" className="w-full border border-slate-300 p-2.5 rounded-md text-sm outline-none focus:border-blue-500" />
+                  <AutoResizeTextarea value={contentPerkongsian.catatan} onChange={e => setContentPerkongsian({...contentPerkongsian, catatan: e.target.value})} placeholder="Catatan..." />
                 </div>
-                <div className="w-full print:hidden mb-2">
-                  <select className="w-full bg-slate-50 py-2 text-center font-bold uppercase border border-gray-200 rounded text-sm" value={penyemakIndex} onChange={e => setPenyemakIndex(Number(e.target.value))}>
-                    {pentadbirList.map((p, i) => <option key={i} value={i}>{p.nama} ({p.jawatan})</option>)}
-                  </select>
-                </div>
-                <p className="font-bold uppercase text-center mt-2">({pentadbirList[penyemakIndex].nama})</p>
-                <p className="text-center text-sm mt-1">{pentadbirList[penyemakIndex].jawatan}</p>
+              </div>
+
+              {/* 3, 4, 5. Ucapan & Lain-lain */}
+              <div className="border border-slate-200 rounded-lg p-4 bg-slate-50/50">
+                <h4 className="text-sm font-semibold text-slate-700 mb-2">3. Ucapan Penolong Kanan</h4>
+                <AutoResizeTextarea value={contentPK} onChange={e => setContentPK(e.target.value)} placeholder="Catatan..." />
+              </div>
+              <div className="border border-slate-200 rounded-lg p-4 bg-slate-50/50">
+                <h4 className="text-sm font-semibold text-slate-700 mb-2">4. Ucapan Guru Besar</h4>
+                <AutoResizeTextarea value={contentGB} onChange={e => setContentGB(e.target.value)} placeholder="Catatan..." />
+              </div>
+              <div className="border border-slate-200 rounded-lg p-4 bg-slate-50/50">
+                <h4 className="text-sm font-semibold text-slate-700 mb-2">5. Lain-lain</h4>
+                <AutoResizeTextarea value={contentLain} onChange={e => setContentLain(e.target.value)} placeholder="Catatan..." />
               </div>
             </div>
           </div>
 
-          {/* Bahagian Sejarah Rekod (Hanya pada skrin) */}
+          {/* Kad 3: Tandatangan */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            
+            {/* Disediakan Oleh */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+              <label className="block text-xs font-semibold text-slate-500 uppercase mb-3 border-b border-slate-100 pb-2">Disediakan oleh:</label>
+              <div className="space-y-3">
+                <select value={disediakanOlehNama} onChange={e => setDisediakanOlehNama(e.target.value)} className="w-full border border-slate-300 p-2.5 rounded-lg text-sm outline-none focus:border-blue-500 font-medium">
+                  {kumpulanGuru[kumpulan].map((ahli, i) => (
+                    ahli.n && <option key={i} value={ahli.n}>{ahli.n}</option>
+                  ))}
+                </select>
+                <input type="text" value={disediakanOlehJawatan} onChange={e => setDisediakanOlehJawatan(e.target.value)} placeholder="Jawatan" className="w-full border border-slate-300 p-2.5 rounded-lg text-sm outline-none focus:border-blue-500" />
+                <div className="pt-2">
+                  <p className="text-[10px] text-slate-400 mb-1">Ruang Tandatangan Digital (Pilihan)</p>
+                  <SignaturePad onSave={setSignDisediakan} currentSign={signDisediakan} />
+                </div>
+              </div>
+            </div>
+
+            {/* Disemak Oleh */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+              <label className="block text-xs font-semibold text-slate-500 uppercase mb-3 border-b border-slate-100 pb-2">Disemak oleh:</label>
+              <div className="space-y-3">
+                <select onChange={handleAdminSelect} className="w-full border border-slate-300 p-2.5 rounded-lg text-sm outline-none focus:border-blue-500 font-medium text-slate-700">
+                  <option disabled>-- PILIH PENYEMAK --</option>
+                  {pentadbirList.map((p, i) => (
+                    <option key={i} value={i} selected={disemakOlehNama === p.nama}>{p.nama} ({p.jawatan})</option>
+                  ))}
+                </select>
+                <input type="text" value={disemakOlehJawatan} onChange={e => setDisemakOlehJawatan(e.target.value)} placeholder="Jawatan" className="w-full border border-slate-300 p-2.5 rounded-lg text-sm outline-none focus:border-blue-500" />
+                <div className="pt-2">
+                  <p className="text-[10px] text-slate-400 mb-1">Ruang Tandatangan Digital (Pilihan)</p>
+                  <SignaturePad onSave={setSignDisemak} currentSign={signDisemak} />
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Arkib Sejarah (Hanya pada skrin) */}
           {rekodSimpanan.length > 0 && (
-            <div className="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-lg mb-24 print:hidden">
-              <div className="flex items-center justify-between mb-4">
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mt-12">
+              <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2 text-blue-700">
                   <IconHistory size={20} />
-                  <h3 className="font-bold">Arkib Rekod Laporan</h3>
+                  <h3 className="font-bold text-sm">Arkib Rekod Laporan</h3>
                 </div>
-                <span className="text-xs text-slate-400 bg-slate-50 px-2 py-1 rounded">Autosave Aktif</span>
+                <span className="text-[10px] text-slate-400 bg-slate-50 px-2 py-1 rounded font-medium">Autosave Aktif</span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-slate-50 text-slate-500 uppercase text-[10px] tracking-wider">
-                      <th className="p-3 text-left">Tarikh / Hari</th>
+                      <th className="p-3 text-left rounded-l-lg">Tarikh / Hari</th>
                       <th className="p-3 text-left">Kumpulan</th>
                       <th className="p-3 text-left">Penyedia</th>
-                      <th className="p-3 text-center">Tindakan</th>
+                      <th className="p-3 text-center rounded-r-lg">Tindakan</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {rekodSimpanan.map((rekod) => (
                       <tr key={rekod.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="p-3 font-medium whitespace-nowrap">
-                          {formatTarikhBM(rekod.tarikh)} ({getHariBM(rekod.tarikh)})
+                        <td className="p-3 font-medium whitespace-nowrap text-slate-700">
+                          {formatTarikhBM(rekod.tarikh)} <span className="text-slate-400 font-normal">({getHariBM(rekod.tarikh)})</span>
                         </td>
-                        <td className="p-3 whitespace-nowrap font-medium text-slate-600">Kumpulan {rekod.kumpulan}</td>
-                        <td className="p-3">{rekod.disediakanOleh}</td>
+                        <td className="p-3 whitespace-nowrap font-medium text-slate-600">Kump. {rekod.kumpulan}</td>
+                        <td className="p-3 text-slate-600">{rekod.disediakanOleh}</td>
                         <td className="p-3">
                           <div className="flex justify-center gap-2">
-                            <button 
-                              onClick={() => handleViewRekod(rekod)}
-                              className="flex items-center gap-1 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-md hover:bg-blue-100 transition-colors"
-                              title="Lihat & Cetak"
-                            >
-                              <IconEye size={14} />
-                              <span>Lihat PDF</span>
+                            <button onClick={() => handleViewRekod(rekod)} className="flex items-center gap-1 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-md hover:bg-blue-100 transition-colors text-xs font-medium">
+                              <IconEye size={14} /> Lihat Data
                             </button>
-                            <button 
-                              onClick={() => handleDeleteRekod(rekod.id)}
-                              className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
-                              title="Padam Rekod"
-                            >
+                            <button onClick={() => handleDeleteRekod(rekod.id)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors">
                               <IconTrash2 size={14} />
                             </button>
                           </div>
@@ -515,29 +507,130 @@
               </div>
             </div>
           )}
+        </div>
+      );
 
-          {/* Panel Kawalan Floating */}
-          <div className="fixed bottom-6 right-6 flex items-center bg-white p-2 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-100 print:hidden z-50">
-            <button onClick={clearForm} className="p-2.5 text-red-500 hover:bg-red-50 rounded-lg mr-1" title="Kosongkan">
-              <IconTrash2 size={20} />
-            </button>
-            <div className="w-px h-8 bg-slate-200 mx-1"></div>
-            <div className="flex items-center gap-2 ml-2">
-              <button 
-                onClick={handleRekod}
-                className="flex items-center gap-2 bg-green-600 text-white px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-green-700 transition-all shadow-sm"
-              >
-                <IconSave size={18} /> <span>Rekod</span>
-              </button>
-              <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-blue-700">
-                <IconPencil size={18} /> <span>Edit Data</span>
-              </button>
-              <button onClick={() => window.print()} className="flex items-center gap-2 bg-slate-100 text-slate-700 px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-slate-200">
-                <IconPrinter size={18} /> <span>Paparan Cetak</span>
-              </button>
+      // ==========================================
+      // VIEW: PRINT LAYOUT (Format Jadual Rasmi SKPK)
+      // ==========================================
+      const PrintView = () => (
+        <div className="hidden print:block w-full text-black bg-white">
+          
+          {/* Header Rasmi */}
+          <div className="flex flex-col items-center mb-6 border-b-2 border-black pb-4 relative">
+            <img 
+              src="image_63ab22.jpg" 
+              alt="Logo" 
+              className="w-20 h-20 object-contain absolute left-0 top-0"
+              onError={(e) => { e.target.style.display='none' }}
+            />
+            <div className="text-center w-full px-24">
+              <h1 className="text-xl font-bold uppercase tracking-wide">
+                Sekolah Kebangsaan Pendidikan Khas Miri
+              </h1>
+              <h2 className="text-lg font-semibold mt-1 underline uppercase">
+                Laporan Perhimpunan Mingguan
+              </h2>
             </div>
           </div>
+
+          <div className="mb-6 space-y-2 text-sm">
+            <div className="flex">
+              <span className="w-40 font-semibold">Tarikh / Hari:</span>
+              <span>{formatTarikhBM(tarikh)} ({getHariBM(tarikh)})</span>
+            </div>
+            <div className="flex">
+              <span className="w-40 font-semibold">Kumpulan Bertugas:</span>
+              <span>Kumpulan {kumpulan}</span>
+            </div>
+            <div className="mt-2">
+              <span className="font-semibold block mb-1">Ahli-ahli Kumpulan Bertugas:</span>
+              <ol className="list-decimal list-outside ml-6 space-y-0.5">
+                {kumpulanGuru[kumpulan].map((ahli, index) => (
+                  ahli.n && <li key={index} className="pl-1">{ahli.n} {ahli.r}</li>
+                ))}
+              </ol>
+            </div>
+          </div>
+
+          {/* Jadual Pengisian Cetakan */}
+          <div className="mb-10 text-sm">
+            <h3 className="font-semibold mb-2">Pengisian Sesi Perhimpunan:</h3>
+            <table className="w-full border-collapse border border-black">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border border-black px-2 py-1.5 text-center w-10">No.</th>
+                  <th className="border border-black px-3 py-1.5 text-left w-1/4">Agenda</th>
+                  <th className="border border-black px-3 py-1.5 text-left">Kandungan</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="border border-black px-2 py-2 text-center align-top font-medium">1</td>
+                  <td className="border border-black px-3 py-2 align-top font-semibold">Bicara Guru</td>
+                  <td className="border border-black px-3 py-2">
+                    <p><span className="font-semibold">Nama guru:</span> {contentBicara.nama || "-"}</p>
+                    <p><span className="font-semibold">Tajuk:</span> {contentBicara.tajuk || "-"}</p>
+                    <p className="mt-1"><span className="font-semibold">Catatan:</span> {contentBicara.catatan}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-black px-2 py-2 text-center align-top font-medium">2</td>
+                  <td className="border border-black px-3 py-2 align-top font-semibold">Perkongsian Murid</td>
+                  <td className="border border-black px-3 py-2">
+                    <p><span className="font-semibold">Nama murid:</span> {contentPerkongsian.nama || "-"}</p>
+                    <p><span className="font-semibold">Tajuk:</span> {contentPerkongsian.tajuk || "-"}</p>
+                    <p className="mt-1"><span className="font-semibold">Catatan:</span> {contentPerkongsian.catatan}</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-black px-2 py-2 text-center align-top font-medium">3</td>
+                  <td className="border border-black px-3 py-2 align-top font-semibold">Ucapan Penolong Kanan</td>
+                  <td className="border border-black px-3 py-2 whitespace-pre-wrap">{contentPK}</td>
+                </tr>
+                <tr>
+                  <td className="border border-black px-2 py-2 text-center align-top font-medium">4</td>
+                  <td className="border border-black px-3 py-2 align-top font-semibold">Ucapan Guru Besar</td>
+                  <td className="border border-black px-3 py-2 whitespace-pre-wrap">{contentGB}</td>
+                </tr>
+                <tr>
+                  <td className="border border-black px-2 py-2 text-center align-top font-medium">5</td>
+                  <td className="border border-black px-3 py-2 align-top font-semibold">Lain-lain</td>
+                  <td className="border border-black px-3 py-2 whitespace-pre-wrap">{contentLain}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Tandatangan Cetakan */}
+          <div className="flex justify-between mt-12 break-inside-avoid text-sm">
+            <div className="w-64 text-center">
+              <p className="text-left font-medium mb-12">Disediakan oleh:</p>
+              <div className="h-16 flex items-end justify-center border-b border-black mb-1 relative">
+                {signDisediakan && <img src={signDisediakan} alt="Sign" className="absolute bottom-0 max-h-16 object-contain" />}
+              </div>
+              <p className="font-bold uppercase">({disediakanOlehNama || '................................'})</p>
+              <p className="mt-0.5">{disediakanOlehJawatan}</p>
+            </div>
+
+            <div className="w-64 text-center">
+              <p className="text-left font-medium mb-12">Disemak oleh:</p>
+              <div className="h-16 flex items-end justify-center border-b border-black mb-1 relative">
+                {signDisemak && <img src={signDisemak} alt="Sign" className="absolute bottom-0 max-h-16 object-contain" />}
+              </div>
+              <p className="font-bold uppercase">({disemakOlehNama || '................................'})</p>
+              <p className="mt-0.5">{disemakOlehJawatan}</p>
+            </div>
+          </div>
+
         </div>
+      );
+
+      return (
+        <>
+          <WebView />
+          <PrintView />
+        </>
       );
     }
 
