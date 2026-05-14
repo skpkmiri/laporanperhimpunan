@@ -5,14 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sistem Laporan Perhimpunan SKPK Miri</title>
   
-  <!-- Memuatkan Tailwind CSS untuk gaya dan rekaan -->
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- Memuatkan React & ReactDOM -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   
-  <!-- Memuatkan Babel untuk menukar sintaks JSX di dalam browser -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <style>
@@ -32,7 +29,6 @@
   
   <div id="root"></div>
 
-  <!-- Kod Aplikasi React -->
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
@@ -82,19 +78,40 @@
       { nama: "SALIHIN BIN AHMAD", jawatan: "PK KOKURIKULUM" }
     ];
 
-    // --- Komponen Tandatangan ---
+    // --- Komponen Tandatangan (PENGIRAAN KOORDINAT TEPAT) ---
     const SignaturePad = ({ onSave, currentSign }) => {
       const canvasRef = useRef(null);
       const [isDrawing, setIsDrawing] = useState(false);
 
+      const getCoordinates = (e) => {
+        const canvas = canvasRef.current;
+        const rect = canvas.getBoundingClientRect();
+        
+        let clientX, clientY;
+        if (e.touches && e.touches.length > 0) {
+          clientX = e.touches[0].clientX;
+          clientY = e.touches[0].clientY;
+        } else {
+          clientX = e.clientX;
+          clientY = e.clientY;
+        }
+
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+
+        return {
+          x: (clientX - rect.left) * scaleX,
+          y: (clientY - rect.top) * scaleY
+        };
+      };
+
       const startDrawing = (e) => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
-        const rect = canvas.getBoundingClientRect();
-        const clientX = (e.clientX || (e.touches && e.touches[0].clientX));
-        const clientY = (e.clientY || (e.touches && e.touches[0].clientY));
+        const { x, y } = getCoordinates(e);
+        
         ctx.beginPath();
-        ctx.moveTo(clientX - rect.left, clientY - rect.top);
+        ctx.moveTo(x, y);
         setIsDrawing(true);
       };
 
@@ -103,10 +120,9 @@
         e.preventDefault(); 
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
-        const rect = canvas.getBoundingClientRect();
-        const clientX = (e.clientX || (e.touches && e.touches[0].clientX));
-        const clientY = (e.clientY || (e.touches && e.touches[0].clientY));
-        ctx.lineTo(clientX - rect.left, clientY - rect.top);
+        const { x, y } = getCoordinates(e);
+        
+        ctx.lineTo(x, y);
         ctx.stroke();
       };
 
@@ -121,8 +137,9 @@
         const canvas = canvasRef.current;
         if (canvas) {
           const ctx = canvas.getContext('2d');
-          ctx.lineWidth = 2;
+          ctx.lineWidth = 2.5;
           ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
           ctx.strokeStyle = '#0f172a';
         }
       }, []);
@@ -137,8 +154,8 @@
             )}
             <canvas
               ref={canvasRef}
-              width={260}
-              height={100}
+              width={500}
+              height={200}
               onMouseDown={startDrawing}
               onMouseMove={draw}
               onMouseUp={stopDrawing}
@@ -146,7 +163,7 @@
               onTouchStart={startDrawing}
               onTouchMove={draw}
               onTouchEnd={stopDrawing}
-              className="cursor-crosshair touch-none w-full bg-transparent relative z-10"
+              className="cursor-crosshair touch-none w-full h-24 bg-transparent relative z-10"
             />
           </div>
           <div className="flex justify-end">
@@ -173,6 +190,9 @@
       
       const [signDisediakan, setSignDisediakan] = useState(null);
       const [signDisemak, setSignDisemak] = useState(null);
+      
+      // State Previu Cetakan
+      const [isPreviewMode, setIsPreviewMode] = useState(false);
 
       // State Rekod Laporan (LocalStorage)
       const [rekodSimpanan, setRekodSimpanan] = useState(() => {
@@ -192,13 +212,11 @@
       }, [rekodSimpanan]);
 
       useEffect(() => {
-        // Update Default Ketua based on group selection
         if(kumpulanGuru[kumpulan] && kumpulanGuru[kumpulan].length > 0) {
            setDisediakanOlehNama(kumpulanGuru[kumpulan][0].n);
         }
       }, [kumpulan, kumpulanGuru]);
 
-      // Handle Admin Selection
       const handleAdminSelect = (e) => {
         const index = e.target.value;
         setDisemakOlehNama(pentadbirList[index].nama);
@@ -217,7 +235,7 @@
         }
       };
 
-      const handleRekod = () => {
+      const handleSimpan = () => {
         const dataBaru = {
           id: Date.now(),
           tarikh: tarikh,
@@ -235,7 +253,15 @@
           ahliGroup: kumpulanGuru[kumpulan]
         };
         setRekodSimpanan([dataBaru, ...rekodSimpanan]);
-        alert("Laporan telah direkodkan ke dalam arkib.");
+        alert("Data laporan telah berjaya disimpan.");
+      };
+
+      const scrollToRekod = () => {
+        if (rekodSimpanan.length === 0) {
+          alert("Tiada rekod laporan buat masa ini. Sila simpan laporan terlebih dahulu.");
+        } else {
+          document.getElementById('bahagian-rekod')?.scrollIntoView({ behavior: 'smooth' });
+        }
       };
 
       const handleViewRekod = (rekod) => {
@@ -257,6 +283,7 @@
         }
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
+        setIsPreviewMode(true);
       };
 
       const handleDeleteRekod = (id) => {
@@ -265,7 +292,6 @@
         }
       };
 
-      // Fungsian Edit Senarai Ahli
       const updateAhli = (index, field, value) => {
         const newGroup = [...kumpulanGuru[kumpulan]];
         newGroup[index][field] = value;
@@ -284,7 +310,6 @@
         setKumpulanGuru({ ...kumpulanGuru, [kumpulan]: newGroup });
       };
 
-      // Format Tarikh
       const getHariBM = (tarikhStr) => {
         if (!tarikhStr) return '';
         const days = ["Ahad", "Isnin", "Selasa", "Rabu", "Khamis", "Jumaat", "Sabtu"];
@@ -299,26 +324,38 @@
       };
 
       // ==========================================
-      // VIEW: WEB LAYOUT (Seperti dalam gambar Mockup)
+      // VIEW: WEB LAYOUT
       // ==========================================
-      const WebView = () => (
+      const webViewContent = (
         <div className="max-w-4xl mx-auto print:hidden pb-24">
           
-          {/* Header Aplikasi (Top Bar) */}
+          {/* Header Aplikasi (Top Bar) dengan LOGO BAHARU */}
           <div className="flex flex-col md:flex-row justify-between items-center bg-white p-4 rounded-xl shadow-sm mb-6 border border-slate-200">
-            <h2 className="font-bold text-lg text-slate-800 mb-4 md:mb-0">Sistem Laporan Perhimpunan</h2>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-3 mb-4 md:mb-0">
+              <img 
+                src="logo sekurah.jpg" 
+                alt="Logo Sekolah" 
+                className="w-10 h-10 object-contain"
+                onError={(e) => { e.target.style.display='none' }} 
+              />
+              <h2 className="font-bold text-lg text-slate-800">Sistem Laporan Perhimpunan</h2>
+            </div>
+            
+            <div className="flex flex-wrap justify-center gap-2">
               <button onClick={clearForm} className="p-2.5 text-red-500 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" title="Kosongkan Data">
                 <IconTrash2 />
               </button>
-              <button onClick={handleRekod} className="flex items-center gap-1.5 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
-                <IconSave size={16} /> Rekod
+              <button onClick={handleSimpan} className="flex items-center gap-1.5 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
+                <IconSave size={16} /> Simpan
               </button>
-              <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-1.5 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
-                <IconPencil size={16} /> Edit Data
+              <button onClick={scrollToRekod} className="flex items-center gap-1.5 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors">
+                <IconHistory size={16} /> Rekod
+              </button>
+              <button onClick={() => { setIsPreviewMode(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="flex items-center gap-1.5 bg-sky-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-sky-600 transition-colors">
+                <IconEye size={16} /> Lihat
               </button>
               <button onClick={() => window.print()} className="flex items-center gap-1.5 bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium border border-slate-200 hover:bg-slate-200 transition-colors">
-                <IconPrinter size={16} /> Paparan Cetak
+                <IconPrinter size={16} /> Cetak
               </button>
             </div>
           </div>
@@ -381,12 +418,11 @@
 
           </div>
 
-          {/* Kad 2: Pengisian Sesi (Struktur Kad-Kad) */}
+          {/* Kad 2: Pengisian Sesi */}
           <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-6">
             <h3 className="font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">Pengisian Sesi Perhimpunan</h3>
             
             <div className="space-y-4">
-              {/* 1. Bicara Guru */}
               <div className="border border-slate-200 rounded-lg p-4 bg-slate-50/50">
                 <h4 className="text-sm font-semibold text-slate-700 mb-3">1. Bicara Guru</h4>
                 <div className="space-y-2.5">
@@ -396,7 +432,6 @@
                 </div>
               </div>
 
-              {/* 2. Perkongsian Murid */}
               <div className="border border-slate-200 rounded-lg p-4 bg-slate-50/50">
                 <h4 className="text-sm font-semibold text-slate-700 mb-3">2. Perkongsian Murid</h4>
                 <div className="space-y-2.5">
@@ -406,7 +441,6 @@
                 </div>
               </div>
 
-              {/* 3, 4, 5. Ucapan & Lain-lain */}
               <div className="border border-slate-200 rounded-lg p-4 bg-slate-50/50">
                 <h4 className="text-sm font-semibold text-slate-700 mb-2">3. Ucapan Penolong Kanan</h4>
                 <AutoResizeTextarea value={contentPK} onChange={e => setContentPK(e.target.value)} placeholder="Catatan..." />
@@ -424,8 +458,6 @@
 
           {/* Kad 3: Tandatangan */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            
-            {/* Disediakan Oleh */}
             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
               <label className="block text-xs font-semibold text-slate-500 uppercase mb-3 border-b border-slate-100 pb-2">Disediakan oleh:</label>
               <div className="space-y-3">
@@ -442,14 +474,13 @@
               </div>
             </div>
 
-            {/* Disemak Oleh */}
             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
               <label className="block text-xs font-semibold text-slate-500 uppercase mb-3 border-b border-slate-100 pb-2">Disemak oleh:</label>
               <div className="space-y-3">
-                <select onChange={handleAdminSelect} className="w-full border border-slate-300 p-2.5 rounded-lg text-sm outline-none focus:border-blue-500 font-medium text-slate-700">
+                <select onChange={handleAdminSelect} value={pentadbirList.findIndex(p => p.nama === disemakOlehNama)} className="w-full border border-slate-300 p-2.5 rounded-lg text-sm outline-none focus:border-blue-500 font-medium text-slate-700">
                   <option disabled>-- PILIH PENYEMAK --</option>
                   {pentadbirList.map((p, i) => (
-                    <option key={i} value={i} selected={disemakOlehNama === p.nama}>{p.nama} ({p.jawatan})</option>
+                    <option key={i} value={i}>{p.nama} ({p.jawatan})</option>
                   ))}
                 </select>
                 <input type="text" value={disemakOlehJawatan} onChange={e => setDisemakOlehJawatan(e.target.value)} placeholder="Jawatan" className="w-full border border-slate-300 p-2.5 rounded-lg text-sm outline-none focus:border-blue-500" />
@@ -459,12 +490,11 @@
                 </div>
               </div>
             </div>
-
           </div>
 
           {/* Arkib Sejarah (Hanya pada skrin) */}
           {rekodSimpanan.length > 0 && (
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mt-12">
+            <div id="bahagian-rekod" className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mt-12 scroll-mt-6">
               <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2 text-blue-700">
                   <IconHistory size={20} />
@@ -511,16 +541,16 @@
       );
 
       // ==========================================
-      // VIEW: PRINT LAYOUT (Format Jadual Rasmi SKPK)
+      // VIEW: PRINT LAYOUT
       // ==========================================
-      const PrintView = () => (
-        <div className="hidden print:block w-full text-black bg-white">
+      const printViewContent = (
+        <div className={`w-full text-black bg-white ${isPreviewMode ? 'block max-w-4xl mx-auto p-10 md:p-14 shadow-2xl rounded-sm mb-12 mt-4' : 'hidden print:block'}`}>
           
-          {/* Header Rasmi */}
+          {/* Header Rasmi LOGO BAHARU */}
           <div className="flex flex-col items-center mb-6 border-b-2 border-black pb-4 relative">
             <img 
-              src="image_63ab22.jpg" 
-              alt="Logo" 
+              src="logo sekurah.jpg" 
+              alt="Logo Sekolah" 
               className="w-20 h-20 object-contain absolute left-0 top-0"
               onError={(e) => { e.target.style.display='none' }}
             />
@@ -627,14 +657,34 @@
       );
 
       return (
-        <>
-          <WebView />
-          <PrintView />
-        </>
+        <React.Fragment>
+          {/* Panel Kawalan Previu */}
+          {isPreviewMode && (
+            <div className="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center bg-slate-800 text-white p-4 rounded-xl shadow-lg mt-6 mb-2 print:hidden">
+              <div className="flex items-center gap-2 mb-4 md:mb-0">
+                <IconEye size={20} className="text-sky-400" />
+                <h2 className="font-bold text-sm">Mod Previu Cetakan Laporan</h2>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => setIsPreviewMode(false)} className="flex items-center gap-1.5 bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-500 transition-colors">
+                  <IconPencil size={16} /> Kembali Edit
+                </button>
+                <button onClick={() => window.print()} className="flex items-center gap-1.5 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-500 transition-colors">
+                  <IconPrinter size={16} /> Cetak Sekarang
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className={isPreviewMode ? "hidden" : "block"}>
+            {webViewContent}
+          </div>
+          
+          {printViewContent}
+        </React.Fragment>
       );
     }
 
-    // Melancarkan Aplikasi React
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<App />);
   </script>
