@@ -5,12 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sistem Laporan Perhimpunan SKPK Miri</title>
   
+  <!-- Memuatkan Tailwind CSS untuk gaya dan rekaan -->
   <script src="https://cdn.tailwindcss.com"></script>
   
+  <!-- Memuatkan React & ReactDOM -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   
+  <!-- Memuatkan Babel untuk menukar sintaks JSX di dalam browser -->
   <script src="https://unpkg.com/@babel/standalone@7.23.0/babel.min.js"></script>
+
+  <!-- Pemuatan SDK Firebase versi Compat stabil untuk kegunaan HTML Standalone (Mengelakkan Ralat Import) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
   <style>
     /* Tetapan khas untuk paparan cetakan (Print) */
@@ -29,6 +36,7 @@
   
   <div id="root"></div>
 
+  <!-- Kod Aplikasi React dengan Live Update -->
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
@@ -78,7 +86,7 @@
       { nama: "SALIHIN BIN AHMAD", jawatan: "PK KOKURIKULUM" }
     ];
 
-    // --- Komponen Tandatangan (PENGIRAAN KOORDINAT TEPAT) ---
+    // --- Komponen Tandatangan ---
     const SignaturePad = ({ onSave, currentSign }) => {
       const canvasRef = useRef(null);
       const [isDrawing, setIsDrawing] = useState(false);
@@ -194,11 +202,9 @@
       // State Previu Cetakan
       const [isPreviewMode, setIsPreviewMode] = useState(false);
 
-      // State Rekod Laporan (LocalStorage)
-      const [rekodSimpanan, setRekodSimpanan] = useState(() => {
-        const saved = localStorage.getItem('skpk_miri_rekod_v3');
-        return saved ? JSON.parse(saved) : [];
-      });
+      // State Pangkalan Data (Firebase)
+      const [rekodSimpanan, setRekodSimpanan] = useState([]);
+      const [isDbReady, setIsDbReady] = useState(false);
 
       // State Kandungan
       const [contentBicara, setContentBicara] = useState({ nama: '', tajuk: '', catatan: '' });
@@ -207,15 +213,73 @@
       const [contentGB, setContentGB] = useState('');
       const [contentLain, setContentLain] = useState('');
 
+      // Integrasi Firebase Cloud Database dengan Pemerhati Masa Nyata (onSnapshot)
       useEffect(() => {
-        localStorage.setItem('skpk_miri_rekod_v3', JSON.stringify(rekodSimpanan));
-      }, [rekodSimpanan]);
+        let unsubscribe;
+        const initFirebase = () => {
+          try {
+            // Konfigurasi Firebase Anda
+            const firebaseConfig = {
+              apiKey: "AIzaSyAraICxsaFaEVpIt3_71Lxn9kUOscexc14",
+              authDomain: "laporanperhimpunan.firebaseapp.com",
+              projectId: "laporanperhimpunan",
+              storageBucket: "laporanperhimpunan.firebasestorage.app",
+              messagingSenderId: "680501192540",
+              appId: "1:680501192540:web:658ac095da29d4f43c8399",
+              measurementId: "G-M4VGHBLGN9"
+            };
 
+            // Memulakan aplikasi Firebase SDK menggunakan objek global 'firebase'
+            if (!firebase.apps.length) {
+              firebase.initializeApp(firebaseConfig);
+            }
+            const db = firebase.firestore();
+
+            // Sediakan API pembungkus yang serasi tanpa sebarang kenyataan 'import' dinamik
+            window.db = db;
+            window.firebaseAPI = {
+              collection: (firestoreInstance, collectionName) => firestoreInstance.collection(collectionName),
+              addDoc: async (collectionRef, data) => {
+                return await collectionRef.add(data);
+              },
+              deleteDoc: async (docRef) => {
+                return await docRef.delete();
+              },
+              doc: (firestoreInstance, collectionName, documentId) => firestoreInstance.collection(collectionName).doc(documentId)
+            };
+            
+            setIsDbReady(true);
+
+            // Memantau data secara LANGSUNG (Live Real-time Sync). 
+            // Apabila ada orang lain yang menambah/memadam rekod, senarai akan dikemas kini serta merta secara automatik tanpa perlu muat semula skrin.
+            unsubscribe = db.collection("laporan_perhimpunan").onSnapshot((snapshot) => {
+              const records = snapshot.docs.map(d => ({ fbId: d.id, ...d.data() }));
+              // Menyusun rekod terbaru di atas
+              records.sort((a, b) => b.id - a.id);
+              setRekodSimpanan(records);
+            }, (error) => {
+               console.error("Firestore real-time sync error:", error);
+            });
+
+          } catch (error) {
+            console.error("Firebase Init Error:", error);
+          }
+        };
+        
+        initFirebase();
+
+        return () => {
+          if (unsubscribe) unsubscribe();
+        };
+      }, []);
+
+      // HANYA tukar default apabila KUMPULAN bertukar secara fizikal, bukannya setiap kali senarai kumpulan dikemaskini.
+      // Ini mengelakkan pilihan pengguna daripada dipadam semula apabila menaip watak baru.
       useEffect(() => {
         if(kumpulanGuru[kumpulan] && kumpulanGuru[kumpulan].length > 0) {
            setDisediakanOlehNama(kumpulanGuru[kumpulan][0].n);
         }
-      }, [kumpulan, kumpulanGuru]);
+      }, [kumpulan]);
 
       const handleAdminSelect = (e) => {
         const index = e.target.value;
@@ -235,7 +299,13 @@
         }
       };
 
-      const handleSimpan = () => {
+      // Simpan Ke Firebase (Ini akan mentrigger onSnapshot pada semua peranti yang sedang aktif)
+      const handleSimpan = async () => {
+        if (!isDbReady || !window.firebaseAPI) {
+            alert("Pangkalan data awan belum sedia. Sila tunggu sebentar.");
+            return;
+        }
+
         const dataBaru = {
           id: Date.now(),
           tarikh: tarikh,
@@ -252,8 +322,13 @@
           signDisemak,
           ahliGroup: kumpulanGuru[kumpulan]
         };
-        setRekodSimpanan([dataBaru, ...rekodSimpanan]);
-        alert("Data laporan telah berjaya disimpan.");
+        
+        try {
+            await window.firebaseAPI.addDoc(window.firebaseAPI.collection(window.db, "laporan_perhimpunan"), dataBaru);
+            alert("✅ Laporan telah berjaya disimpan ke pangkalan data awan Firebase.");
+        } catch (error) {
+            alert("Ralat Firebase: Sila pastikan Rules database membenarkan penulisan. " + error.message);
+        }
       };
 
       const scrollToRekod = () => {
@@ -286,9 +361,14 @@
         setIsPreviewMode(true);
       };
 
-      const handleDeleteRekod = (id) => {
-        if (confirm("Adakah anda pasti mahu memadam rekod ini?")) {
-          setRekodSimpanan(rekodSimpanan.filter(r => r.id !== id));
+      // Padam dari Firebase (onSnapshot juga akan dikemas kini serta merta di peranti lain)
+      const handleDeleteRekod = async (fbId) => {
+        if (confirm("Adakah anda pasti mahu memadam rekod ini secara kekal dari awan?")) {
+            try {
+                await window.firebaseAPI.deleteDoc(window.firebaseAPI.doc(window.db, "laporan_perhimpunan", fbId));
+            } catch (error) {
+                alert("Ralat memadam data: " + error.message);
+            }
         }
       };
 
@@ -345,7 +425,7 @@
               <button onClick={clearForm} className="p-2.5 text-red-500 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" title="Kosongkan Data">
                 <IconTrash2 />
               </button>
-              <button onClick={handleSimpan} className="flex items-center gap-1.5 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
+              <button onClick={handleSimpan} className={`flex items-center gap-1.5 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isDbReady ? 'bg-green-600 hover:bg-green-700' : 'bg-slate-400 cursor-not-allowed'}`}>
                 <IconSave size={16} /> Simpan
               </button>
               <button onClick={scrollToRekod} className="flex items-center gap-1.5 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors">
@@ -408,6 +488,20 @@
                       placeholder="Peranan cth: (K)" 
                       className="w-24 border border-slate-300 p-2 rounded-md text-sm outline-none focus:border-blue-500"
                     />
+                    
+                    {/* Butang Pintas "Set Penyedia" mengikut nama yang ditekan terus */}
+                    <button 
+                      onClick={() => setDisediakanOlehNama(ahli.n)}
+                      className={`text-xs px-2.5 py-1.5 rounded transition-colors font-medium border ${
+                        disediakanOlehNama === ahli.n 
+                          ? 'bg-blue-600 border-blue-600 text-white shadow-sm' 
+                          : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                      }`}
+                      title="Tetapkan guru ini sebagai Penyedia Laporan"
+                    >
+                      Penyedia
+                    </button>
+
                     <button onClick={() => removeAhli(idx)} className="text-red-400 hover:text-red-600 p-1">
                       <IconTrash2 size={16} />
                     </button>
@@ -498,9 +592,9 @@
               <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2 text-blue-700">
                   <IconHistory size={20} />
-                  <h3 className="font-bold text-sm">Arkib Rekod Laporan</h3>
+                  <h3 className="font-bold text-sm">Arkib Rekod Laporan (Awan Firebase)</h3>
                 </div>
-                <span className="text-[10px] text-slate-400 bg-slate-50 px-2 py-1 rounded font-medium">Autosave Aktif</span>
+                <span className="text-[10px] text-green-700 bg-green-100 px-2 py-1 rounded font-bold border border-green-200">Cloud Sync Active</span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -514,7 +608,7 @@
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {rekodSimpanan.map((rekod) => (
-                      <tr key={rekod.id} className="hover:bg-slate-50 transition-colors">
+                      <tr key={rekod.fbId} className="hover:bg-slate-50 transition-colors">
                         <td className="p-3 font-medium whitespace-nowrap text-slate-700">
                           {formatTarikhBM(rekod.tarikh)} <span className="text-slate-400 font-normal">({getHariBM(rekod.tarikh)})</span>
                         </td>
@@ -525,7 +619,7 @@
                             <button onClick={() => handleViewRekod(rekod)} className="flex items-center gap-1 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-md hover:bg-blue-100 transition-colors text-xs font-medium">
                               <IconEye size={14} /> Lihat Data
                             </button>
-                            <button onClick={() => handleDeleteRekod(rekod.id)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors">
+                            <button onClick={() => handleDeleteRekod(rekod.fbId)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors" title="Padam Kekal dari Firebase">
                               <IconTrash2 size={14} />
                             </button>
                           </div>
